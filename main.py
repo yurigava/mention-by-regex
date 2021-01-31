@@ -101,7 +101,7 @@ def change_word(update: Update, context: CallbackContext) -> int:
 
 
 def checkMatch(regex: str, word: str) -> bool:
-    return bool(re.search(regex, word, re.IGNORECASE))
+    return bool(re.search(regex, word, re.IGNORECASE)) if type(word) == str else False
 
 
 def show_word(update: Update, context: CallbackContext) -> int:
@@ -142,7 +142,8 @@ def filterPutaria(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
     regexCompilado = f'.*\\b({"|".join(context.bot_data[PALAVRAS])})\\b.*'
     if update.message\
-            and checkMatch(regexCompilado, update.message.text)\
+            and (checkMatch(regexCompilado, update.message.text)
+                 or checkMatch(regexCompilado, update.message.caption))\
             and not update.message.from_user.id == 215849116\
             and not (update.message.reply_to_message and
                      update.message.reply_to_message.from_user.id == 215849116)\
@@ -195,9 +196,7 @@ def main():
     )
     dispatcher.add_handler(
         MessageHandler(
-            Filters.text & ~Filters.command,
-            filterPutaria))
-
+            (Filters.text | Filters.caption) & ~Filters.command, filterPutaria))
 
     # Start the Bot
     updater.start_polling()
